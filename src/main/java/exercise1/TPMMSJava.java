@@ -1,10 +1,8 @@
 package exercise1;
 
 import de.hpi.dbs2.ChosenImplementation;
-import de.hpi.dbs2.dbms.Block;
-import de.hpi.dbs2.dbms.BlockManager;
-import de.hpi.dbs2.dbms.BlockOutput;
-import de.hpi.dbs2.dbms.Relation;
+import de.hpi.dbs2.dbms.*;
+import de.hpi.dbs2.dbms.utils.BlockSorter;
 import de.hpi.dbs2.exercise1.SortOperation;
 import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +41,8 @@ public class TPMMSJava extends SortOperation {
             // hier jetzt liste reinladen und sorten mit Blocksorter
             for (int j = 0; j < listSize; j++) {
                 getBlockManager().load(iterators.get(i).next());
+
+                //BlockSorter.INSTANCE.sort(relation, getBlockManager().getUsedBlocks(), );
 
             }
         }
