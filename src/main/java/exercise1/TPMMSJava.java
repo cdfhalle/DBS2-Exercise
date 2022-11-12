@@ -29,18 +29,22 @@ public class TPMMSJava extends SortOperation {
         int listSize = getBlockManager().getFreeBlocks();
         int listCount = relation.getEstimatedSize() / listSize;
 
-        if(listSize*listSize < relation.getEstimatedSize()){
+        if (listSize * listSize < relation.getEstimatedSize()) {
             throw new RelationSizeExceedsCapacityException();
         }
 
-        Iterator<Block> iterator = relation.iterator();
+        //Store iterators to all list heads in iterators
         ArrayList<Iterator<Block>> iterators = new ArrayList<Iterator<Block>>();
-        for (int i=0; i<relation.getEstimatedSize(); i++){
-            if(i%listSize==0){
-                Iterator<Block> iti = iterator;
+        for (int i = 0; i < listCount; i++) {
+            iterators.add(relation.iterator());
+            for (int j = 0; j < i * listSize; j++) {
+                iterators.get(i).next();
             }
-            iterator.next();
-        }
+            // hier jetzt liste reinladen und sorten mit Blocksorter
+            for (int j = 0; j < listSize; j++) {
+                getBlockManager().load(iterators.get(i).next());
 
+            }
+        }
     }
 }
