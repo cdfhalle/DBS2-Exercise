@@ -18,7 +18,7 @@ public class TPMMSJava extends SortOperation {
 
     @Override
     public int estimatedIOCost(@NotNull Relation relation) {
-        throw new UnsupportedOperationException("TODO");
+        return 4 * relation.getEstimatedSize();
     }
 
     public void sortPhase1(@NotNull Relation relation, int listSize, int listCount) {
@@ -61,7 +61,7 @@ public class TPMMSJava extends SortOperation {
         Function<Integer, Block> currBlock = (i) -> {
             return blocks[i][blockPointers[i]];
         };
-
+        Iterator<Block> iterator = relation.iterator();
         for (int i = 0; i < listCount; i++) {
             for (int j = 0; j < listSize; j++) {
                 blocks[i][j] = relation.iterator().next();
@@ -83,7 +83,7 @@ public class TPMMSJava extends SortOperation {
 
             // findMinTuple:
             for (int i = 0; i < listCount; i++) {
-                if(minTuple == null){
+                if(minTuple == null && !isEmpty.apply(i)){
                     minTuple = getNextTuple.apply(i);
                     listWithMinTuple = i;
                 }

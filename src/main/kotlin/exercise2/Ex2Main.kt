@@ -37,9 +37,13 @@ fun main() {
     )
     println(root)
 
-    val tree: AbstractBPlusTree = BPlusTreeJava(root)
+    val tree: AbstractBPlusTree = BPlusTreeKotlin(root)
     println(tree)
 
+    // check what happens when we insert a key that already exists
+    println(tree.insert(2, ref(15)))
+    println(tree.insert(8, ref(11)))
+    println(tree)
     /*
      * playground
      * ~ feel free to experiment with the tree and tree nodes here
