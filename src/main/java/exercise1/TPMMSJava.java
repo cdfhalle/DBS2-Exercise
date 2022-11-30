@@ -21,6 +21,13 @@ public class TPMMSJava extends SortOperation {
         return 4 * relation.getEstimatedSize();
     }
 
+    public void outputTuple(@NotNull Tuple tuple, @NotNull BlockOutput output, @NotNull Block outputBlock) {
+        if (outputBlock.isFull()) {
+            output.output(outputBlock);
+        }
+        outputBlock.append(tuple);
+    }
+
     public void sortPhase1(@NotNull Relation relation, int listSize, int listCount) {
         //Store iterators to all list heads in iterators
         ArrayList<Iterator<Block>> iterators = new ArrayList<Iterator<Block>>();
@@ -64,7 +71,7 @@ public class TPMMSJava extends SortOperation {
         Iterator<Block> iterator = relation.iterator();
         for (int i = 0; i < listCount; i++) {
             for (int j = 0; j < listSize; j++) {
-                blocks[i][j] = relation.iterator().next();
+                blocks[i][j] = iterator.next();
             }
         }
 
@@ -97,7 +104,7 @@ public class TPMMSJava extends SortOperation {
 
             minTuple = null;
             //count indexes of outputtet tuple up
-            if (tuplePointers[listWithMinTuple] < currBlock.apply(listWithMinTuple).getCapacity()) {
+            if (tuplePointers[listWithMinTuple] < currBlock.apply(listWithMinTuple).getCapacity()-1) {
                 tuplePointers[listWithMinTuple]++;
             } else {
                 getBlockManager().release(currBlock.apply(listWithMinTuple), false);
@@ -121,76 +128,19 @@ public class TPMMSJava extends SortOperation {
         getBlockManager().release(outputBlock, false);
     }
 
-//    public void sortPhase2(@NotNull Relation relation, @NotNull BlockOutput output, int listSize, int listCount) {
-//        ArrayList<Iterator<Block>> iterators = new ArrayList<Iterator<Block>>();
-//        for (int i = 0; i < listCount; i++) {
-//            iterators.add(relation.iterator());
-//            for (int j = 0; j < i * listSize; j++) {
-//                iterators.get(i).next();
-//            }
-//        }
-//        Block outputBlock = getBlockManager().allocate(true);
-//        ArrayList<Block> loadedBlocks = new ArrayList();
-//        ArrayList<Iterator<Tuple>> blockIterators = new ArrayList();
-//        ArrayList<Tuple> firstTuples = new ArrayList<>();
-//
-//        //load first block of every list into memory
-//        for (int i = 0; i < listCount; i++) {
-//            loadedBlocks.add(getBlockManager().load(iterators.get(i).next()));
-//        }
-//
-//        //save iterator to every Block
-//        for (int i = 0; i < loadedBlocks.size(); i++) {
-//            blockIterators.add(loadedBlocks.get(i).iterator());
-//        }
-//
-//        //save all first Tuples of Blocks into array
-//        for (int i = 0; i < loadedBlocks.size(); i++) {
-//            //check if a Block is empty, if so load new block
-//            if (!blockIterators.get(i).hasNext()) {
-//                getBlockManager().release(loadedBlocks.get(i), false);
-//                if (!iterators.get(i).hasNext()) {
-//                    blockIterators.get(i).remove();
-//                    if (blockIterators.isEmpty()){
-//                        sorted = true;
-//                    }
-//                } else {
-//                    loadedBlocks.set(i, iterators.get(i).next());
-//                    blockIterators.set(i, loadedBlocks.get(i).iterator());
-//                }
-//            }
-//            firstTuples.set(i,blockIterators.get(i).next());
-//        }
-//
-//        Tuple minTuple = Collections.min(firstTuples, relation.getColumns().getColumnComparator(getSortColumnIndex()));
-//        outputTuple(minTuple, output, outputBlock);
-//        firstTuples.indexOf(minTuple);
-//
-//    }
-
-    public void outputTuple(@NotNull Tuple tuple, @NotNull BlockOutput output, @NotNull Block outputBlock) {
-        if (outputBlock.isFull()) {
-            output.output(outputBlock);
-        }
-        outputBlock.append(tuple);
-    }
 
     @Override
     public void sort(@NotNull Relation relation, @NotNull BlockOutput output) throws RelationSizeExceedsCapacityException {
 
         int listSize = getBlockManager().getFreeBlocks();
         int listCount = relation.getEstimatedSize() / listSize;
-
         if (listSize * listSize < relation.getEstimatedSize()) {
             throw new RelationSizeExceedsCapacityException();
         }
-
         sortPhase1(relation, listSize, listCount);
         //sortPhase2(relation, output, listSize, listCount);
 
         sortPhase2withList(relation, output, listSize, listCount);
-
-
     }
 
 }
