@@ -24,26 +24,36 @@ class BPlusTreeKotlin : AbstractBPlusTree {
     }
 
     private fun insertIntoLeaf(key: Int, value: ValueReference, leaf: LeafNode){
-        val newKeys = IntArray(leaf.n)
-        val newReferences = Array<ValueReference?>(leaf.order) { null }
+        val random = Random()
+        var result = betterinsertKeyAndValue(key, value, leaf.keys, leaf.references)
+        if(random.nextBoolean())
+            result = insertKeyAndValue(key, value, leaf.keys, leaf.references)
+        for(i in 0 until leaf.n){
+            leaf.keys[i] = result.first[i]
+            leaf.references[i] = result.second[i]
+        }
+    }
+
+
+    private fun insertKeyAndValue(key: Int, value: ValueReference, keys: Array<Int?>, references: Array<ValueReference?>):
+            Pair<Array<Int?>, Array<ValueReference?>> {
+        val newKeys = Array<Int?>(keys.size) { null }
+        val newReferences = Array<ValueReference?>(references.size) { null }
         var position = 0;
-        while (leaf.keys[position] < key && leaf.keys[position] != null){
+        while ((keys[position]?: -1) < key && (keys[position]?: -1) >= 0){
             position++
         }
         for (i in 0 until position){
-            newKeys[i] = leaf.keys[i]
-            newReferences[i] = leaf.references[i]
+            newKeys[i] = keys[i]
+            newReferences[i] = references[i]
         }
         newKeys[position] = key
         newReferences[position] = value
-        for(i in position until leaf.n - 1){
-            newKeys[i + 1] = leaf.keys[i]
-            newReferences[i + 1] = leaf.references[i]
+        for(i in position until keys.size - 1){
+            newKeys[i + 1] = keys[i]
+            newReferences[i + 1] = references[i]
         }
-        for(i in 0 until leaf.n){
-            leaf.keys[i] = newKeys[i]
-            leaf.references[i] = newReferences[i]
-        }
+        return Pair(newKeys, newReferences)
     }
 
     private fun betterInsertIntoLeaf(key: Int, value: ValueReference, leaf: LeafNode){
@@ -83,6 +93,7 @@ class BPlusTreeKotlin : AbstractBPlusTree {
             // node already full -> Split the LeafNode in two!
             else{
                 // move half of the keys and references to a new LeafNode
+                // TODO: insert the new key and value into the array
                 val divider = ceil((leaf.n + 1) / 2.0).toInt()
                 val rightEntries = mutableListOf<Entry>()
                 for (i in divider until leaf.n){
