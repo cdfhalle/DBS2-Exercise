@@ -3,6 +3,7 @@ package exercise2
 import de.hpi.dbs2.ChosenImplementation
 import de.hpi.dbs2.exercise2.*
 import java.text.FieldPosition
+import java.util.Random
 import java.util.Stack
 import kotlin.math.ceil
 
@@ -22,6 +23,7 @@ class BPlusTreeKotlin : AbstractBPlusTree {
         }
         return path
     }
+
 
     private fun insertIntoLeaf(key: Int, value: ValueReference, leaf: LeafNode){
         val random = Random()
@@ -56,31 +58,27 @@ class BPlusTreeKotlin : AbstractBPlusTree {
         return Pair(newKeys, newReferences)
     }
 
-    private fun betterInsertIntoLeaf(key: Int, value: ValueReference, leaf: LeafNode){
-        var keys = leaf.keys.toMutableList()
-        var values = leaf.references.toMutableList()
+    private fun betterinsertKeyAndValue(key: Int, value: ValueReference, keys: Array<Int?>, references: Array<ValueReference?>):
+        Pair<Array<Int?>, Array<ValueReference?>> {
+        var keys = keys.toMutableList()
+        var values = references.toMutableList()
         var i = 0
-        while(keys[i] < key && keys[i] != null){i++}
+        while(keys[i] != null && keys[i]!! < key){i++}
         keys.add(i, key)
         values.add(i, value)
-        keys.removeLast()
-        values.removeLast()
-        for(i in 0 until leaf.n){
-            leaf.keys[i] = keys[i]
-            leaf.references[i] = values[i]
-        }
+        return Pair(keys.toTypedArray<Int?>(), values.toTypedArray())
     }
 
     override fun insert(key: Int, value: ValueReference): ValueReference? {
 
         val path = findLeafPath(key)
-        var leaf = path.pop()
+        var leaf = path.pop() as LeafNode
         var returnValue: ValueReference? = null
         // key already exists
         if (leaf.getOrNull(key) != null) {
             for (i in 0 until leaf.nodeSize) {
                 if (leaf.keys[i] == key) {
-                    returnValue = (leaf as LeafNode).references[i]
+                    returnValue = leaf.references[i]
                     leaf.references[i] = value
                 }
             }
@@ -88,7 +86,7 @@ class BPlusTreeKotlin : AbstractBPlusTree {
         else {
             // node is not full
             if (!leaf.isFull) {
-                betterInsertIntoLeaf(key, value, leaf as LeafNode)
+                insertIntoLeaf(key, value, leaf)
             }
             // node already full -> Split the LeafNode in two!
             else{
@@ -97,12 +95,14 @@ class BPlusTreeKotlin : AbstractBPlusTree {
                 val divider = ceil((leaf.n + 1) / 2.0).toInt()
                 val rightEntries = mutableListOf<Entry>()
                 for (i in divider until leaf.n){
-                    rightEntries.add(Entry(leaf.keys[i], (leaf as LeafNode).references[i]))
+                    rightEntries.add(Entry(leaf.keys[i], (leaf).references[i]))
                     leaf.keys[i] = null
                     leaf.references[i] = null
                 }
                 // create new LeafNode
-                var rightNode = BPlusTreeNode.buildTree(leaf.order, arrayOf(rightEntries.toTypedArray()))
+                var rightNode = BPlusTreeNode.buildTree(leaf.order, arrayOf(rightEntries.toTypedArray())) as LeafNode
+                rightNode.nextSibling = leaf.nextSibling
+                leaf.nextSibling = rightNode
                 // TODO: integrate the new LeafNode into the tree
             }
         }
