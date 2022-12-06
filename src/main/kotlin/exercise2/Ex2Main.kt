@@ -44,6 +44,12 @@ fun main() {
     println(tree.insert(2, ref(15)))
     println(tree.insert(8, ref(11)))
     println(tree)
+
+    val leafNode = LeafNode(4)
+    println(leafNode)
+    val innerNode = InnerNode(4)
+    println(innerNode)
+
     /*
      * playground
      * ~ feel free to experiment with the tree and tree nodes here
