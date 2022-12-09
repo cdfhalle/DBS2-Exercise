@@ -35,23 +35,59 @@ fun main() {
             )
         )
     )
-    println(root)
 
     val tree: AbstractBPlusTree = BPlusTreeKotlin(root)
     println(tree)
 
     // check what happens when we insert a key that already exists
-    println(tree.insert(2, ref(15)))
+    // println(tree.insert(2, ref(15)))
+    // println(tree)
+
+    // check what happens when we insert a key that does not exist
     println(tree.insert(8, ref(11)))
+    println(tree.insert(9, ref(12)))
+
+    println(tree.insert(10, ref(13)))
+
+    println(tree.insert(12, ref(14)))
+    println(tree)
+    println(tree.insert(6, ref(15)))
     println(tree)
 
-    val leafNode = LeafNode(4)
-    println(leafNode)
-    val innerNode = InnerNode(4)
-    println(innerNode)
+
+
 
     /*
      * playground
      * ~ feel free to experiment with the tree and tree nodes here
      */
+    val rootT = BPlusTreeNode.buildTree(4,
+        arrayOf(
+            entryArrayOf(
+                1 to ref(6),
+                2 to ref(1),
+                3 to ref(4)
+            ), entryArrayOf(
+                4 to ref(3),
+                7 to ref(2)
+            ),
+            entryArrayOf(
+                8 to ref(5),
+                9 to ref(7)
+            )
+        )
+    )
+
+//    val treeT: AbstractBPlusTree = BPlusTreeKotlin(rootT)
+//    println(treeT)
+//    treeT.insert(2, ref(1))
+//    treeT.insert(7, ref(2))
+//    treeT.insert(4, ref(3))
+//    println(treeT)
+//    treeT.insert(3, ref(4))
+//    println(treeT)
+//    treeT.insert(8, ref(5))
+//    treeT.insert(1, ref(6))
+//    treeT.insert(9, ref(7))
+
 }
