@@ -1,11 +1,14 @@
 package exercise3
 
 import de.hpi.dbs2.ChosenImplementation
+import de.hpi.dbs2.dbms.Block
 import de.hpi.dbs2.dbms.BlockManager
 import de.hpi.dbs2.dbms.Operation
 import de.hpi.dbs2.dbms.Relation
 import de.hpi.dbs2.exercise3.InnerJoinOperation
 import de.hpi.dbs2.exercise3.JoinAttributePair
+import kotlin.math.absoluteValue
+import kotlin.math.ceil
 
 @ChosenImplementation(true)
 
@@ -51,7 +54,38 @@ class HashEquiInnerJoinKotlin(
         leftInputRelation: Relation,
         rightInputRelation: Relation
     ): Int {
-        TODO()
+        return 3 * (leftInputRelation.estimatedBlockCount() + rightInputRelation.estimatedBlockCount())
+    }
+
+    private fun hashRelation(relation: Relation, columnIndex: Int, bucketCount : Int): Array<MutableList<Block>>{
+        val buckets = Array<MutableList<Block>>(bucketCount) { mutableListOf<Block>() }
+        val bucketBlocksInMemory = Array<Block>(bucketCount) { blockManager.allocate(true) }
+        val rIterator = relation.iterator()
+        // iterate over all blocks of the relation
+        while (rIterator.hasNext()){
+            var block = rIterator.next()
+            block = blockManager.load(block)
+            val tupleIterator = block.iterator()
+            // iterate over all tuples of the loaded block
+            while (tupleIterator.hasNext()){
+                val tuple = tupleIterator.next()
+                val bucketIndex = (tuple[columnIndex].hashCode()).absoluteValue % bucketCount
+                // if the hashed bucket is full safe it to disc and allocate a new block
+                if (bucketBlocksInMemory[bucketIndex].isFull()){
+                    buckets[bucketIndex].add(blockManager.release(bucketBlocksInMemory[bucketIndex], true)!!)
+                    bucketBlocksInMemory[bucketIndex] = blockManager.allocate(true)
+                }else {
+                    bucketBlocksInMemory[bucketIndex].append(tuple)
+                }
+            }
+            // release each input block from memory after it has been processed
+            blockManager.release(block, saveToDisk = false)
+        }
+        // save all remaining blocks to disc
+        for (i in 0 until bucketCount){
+            buckets[i].add(blockManager.release(bucketBlocksInMemory[i], true)!!)
+        }
+        return buckets
     }
 
     override fun join(
