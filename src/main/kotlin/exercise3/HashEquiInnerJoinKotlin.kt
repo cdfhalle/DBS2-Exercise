@@ -12,33 +12,6 @@ import kotlin.math.ceil
 
 @ChosenImplementation(true)
 
-//class TupleAppender : AutoCloseable, Consumer<Tuple> {
-//
-//    val blockOutput: BlockOutput
-//
-//    constructor(blockOutput: BlockOutput) {
-//        this.blockOutput = blockOutput
-//    }
-//
-//    val outputBlock = getBlockManager().allocate(true)
-//
-//    override fun accept(tuple: Tuple) {
-//        if (outputBlock.isFull()) {
-//            blockOutput.move(outputBlock)
-//            outputBlock = getBlockManager().allocate(true)
-//        }
-//        outputBlock.append(tuple)
-//    }
-//
-//    override fun close() {
-//        if (!outputBlock.isEmpty()) {
-//            blockOutput.move(outputBlock)
-//        } else {
-//            getBlockManager().release(outputBlock, false)
-//        }
-//    }
-//}
-
 class HashEquiInnerJoinKotlin(
     blockManager: BlockManager,
     leftColumnIndex: Int,
@@ -149,6 +122,7 @@ class HashEquiInnerJoinKotlin(
                                 if (outputBlock.isFull()){
                                     blockOutput.move(outputBlock)
                                     outputBlock = blockManager.allocate(true)
+                                    outputBlock.append(joinedTuple)
                                 }else{
                                     outputBlock.append(joinedTuple)
                                 }
