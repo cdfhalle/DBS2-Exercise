@@ -74,6 +74,7 @@ class HashEquiInnerJoinKotlin(
                 if (bucketBlocksInMemory[bucketIndex].isFull()){
                     buckets[bucketIndex].add(blockManager.release(bucketBlocksInMemory[bucketIndex], true)!!)
                     bucketBlocksInMemory[bucketIndex] = blockManager.allocate(true)
+                    bucketBlocksInMemory[bucketIndex].append(tuple)
                 }else {
                     bucketBlocksInMemory[bucketIndex].append(tuple)
                 }
